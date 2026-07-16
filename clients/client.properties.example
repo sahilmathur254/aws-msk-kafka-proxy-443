@@ -1,0 +1,16 @@
+# Apache Kafka Java client configuration.
+# Copy this file outside the repository, replace placeholders, and chmod 600 it.
+security.protocol=SASL_SSL
+sasl.mechanism=SCRAM-SHA-512
+sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username="REPLACE_ME" password="REPLACE_ME";
+
+# Keep hostname verification enabled.
+ssl.endpoint.identification.algorithm=https
+
+# Client resilience settings; tune against application requirements.
+request.timeout.ms=30000
+default.api.timeout.ms=60000
+reconnect.backoff.ms=250
+reconnect.backoff.max.ms=10000
+retry.backoff.ms=500
+retry.backoff.max.ms=10000

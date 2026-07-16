@@ -1,0 +1,14 @@
+# librdkafka/kcat configuration.
+# Copy this file outside the repository, replace placeholders, and chmod 600 it.
+security.protocol=SASL_SSL
+sasl.mechanisms=SCRAM-SHA-512
+sasl.username=REPLACE_ME
+sasl.password=REPLACE_ME
+
+# librdkafka verifies the certificate chain and hostname by default.
+enable.ssl.certificate.verification=true
+ssl.endpoint.identification.algorithm=https
+
+socket.timeout.ms=30000
+reconnect.backoff.ms=250
+reconnect.backoff.max.ms=10000

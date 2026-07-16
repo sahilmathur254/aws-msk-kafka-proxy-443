@@ -1,0 +1,43 @@
+aws_region = "eu-west-1"
+name       = "msk-proxy-443"
+
+vpc_id = "vpc-0123456789abcdef0"
+
+public_subnet_ids = [
+  "subnet-11111111111111111",
+  "subnet-22222222222222222"
+]
+
+private_subnet_ids = [
+  "subnet-33333333333333333",
+  "subnet-44444444444444444"
+]
+
+msk_security_group_id = "sg-0123456789abcdef0"
+
+# Obtain this value with:
+# aws kafka get-bootstrap-brokers --cluster-arn <cluster-arn> \
+#   --query BootstrapBrokerStringSaslScram --output text
+msk_bootstrap_brokers_sasl_scram = "b-1.example.c2.kafka.eu-west-1.amazonaws.com:9096,b-2.example.c2.kafka.eu-west-1.amazonaws.com:9096,b-3.example.c2.kafka.eu-west-1.amazonaws.com:9096"
+
+route53_zone_id = "Z0123456789ABCDEFG"
+kafka_domain    = "kafka.example.com"
+
+# Secret JSON must contain certificate and private_key fields.
+tls_secret_arn = "arn:aws:secretsmanager:eu-west-1:123456789012:secret:kafka-proxy/wildcard-tls-AbCdEf"
+
+# Restrict to the real public egress CIDRs of your clients/offices.
+client_cidrs = [
+  "203.0.113.10/32"
+]
+
+desired_count           = 2
+autoscaling_min_capacity = 2
+autoscaling_max_capacity = 10
+
+nlb_deletion_protection = false
+
+tags = {
+  Environment = "poc"
+  Owner       = "platform-team"
+}

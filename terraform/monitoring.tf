@@ -99,7 +99,7 @@ resource "aws_cloudwatch_dashboard" "proxy" {
         height = 6
         properties = {
           title  = "NLB flows"
-          region = var.aws_region
+          region = local.aws_region
           stat   = "Sum"
           period = 60
           metrics = [
@@ -116,7 +116,7 @@ resource "aws_cloudwatch_dashboard" "proxy" {
         height = 6
         properties = {
           title  = "Target health"
-          region = var.aws_region
+          region = local.aws_region
           stat   = "Average"
           period = 60
           metrics = [
@@ -133,7 +133,7 @@ resource "aws_cloudwatch_dashboard" "proxy" {
         height = 6
         properties = {
           title  = "ECS utilisation"
-          region = var.aws_region
+          region = local.aws_region
           stat   = "Average"
           period = 60
           metrics = [
@@ -150,7 +150,7 @@ resource "aws_cloudwatch_dashboard" "proxy" {
         height = 6
         properties = {
           title  = "Recent proxy errors"
-          region = var.aws_region
+          region = local.aws_region
           query  = "SOURCE '${aws_cloudwatch_log_group.proxy.name}' | fields @timestamp, @message | filter @message like /ERROR|Exception/ | sort @timestamp desc | limit 50"
           view   = "table"
         }

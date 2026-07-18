@@ -27,15 +27,7 @@ kafka_domain    = "kafka.example.com"
 tls_secret_arn = "arn:aws:secretsmanager:eu-west-1:123456789012:secret:kafka-proxy/wildcard-tls-AbCdEf"
 
 # Restrict to the real public egress CIDRs of your clients/offices.
-client_cidrs = [
-  "203.0.113.10/32"
-]
-
-desired_count           = 2
-autoscaling_min_capacity = 2
-autoscaling_max_capacity = 10
-
-nlb_deletion_protection = false
+client_cidrs = ["203.0.113.10/32"]
 
 tags = {
   Environment = "poc"

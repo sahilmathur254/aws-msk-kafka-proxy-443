@@ -4,19 +4,20 @@ SHELL := /usr/bin/env bash
 
 fmt:
 	terraform -chdir=terraform fmt -recursive
+	terraform -chdir=examples/complete fmt -recursive
 
 validate:
 	./scripts/validate.sh
 
 plan:
-	terraform -chdir=terraform init
-	terraform -chdir=terraform plan -out=tfplan
+	terraform -chdir=examples/complete init
+	terraform -chdir=examples/complete plan -out=tfplan
 
 apply:
-	terraform -chdir=terraform apply tfplan
+	terraform -chdir=examples/complete apply tfplan
 
 destroy:
-	terraform -chdir=terraform destroy
+	terraform -chdir=examples/complete destroy
 
 test:
 	./tests/test-produce-consume.sh

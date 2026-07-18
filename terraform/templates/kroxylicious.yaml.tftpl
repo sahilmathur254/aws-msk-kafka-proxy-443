@@ -1,0 +1,52 @@
+virtualClusters:
+  - name: ${virtual_cluster_name}
+    targetCluster:
+      bootstrapServers: ${msk_bootstrap}
+      bootstrapServerSelection:
+        strategy: round-robin
+      tls: {}
+    gateways:
+      - name: external-port-443
+        sniHostIdentifiesNode:
+          bootstrapAddress: ${bootstrap_hostname}:${proxy_port}
+          advertisedBrokerAddressPattern: ${broker_hostname}
+        tls:
+          key:
+            privateKeyFile: /tmp/kroxylicious-runtime/tls.key
+            certificateFile: /tmp/kroxylicious-runtime/tls.crt
+          protocols:
+            allowed:
+              - TLSv1.3
+              - TLSv1.2
+    logNetwork: false
+    logFrames: false
+    drainTimeout: 30s
+
+proxyProtocol:
+  mode: disabled
+
+management:
+  bindAddress: 0.0.0.0
+  port: ${management_port}
+  endpoints:
+    prometheus: {}
+
+network:
+  proxy:
+    workerThreadCount: ${proxy_worker_threads}
+    shutdownQuietPeriod: 5s
+    shutdownTimeout: 120s
+  management:
+    workerThreadCount: 2
+    shutdownQuietPeriod: 2s
+    shutdownTimeout: 10s
+
+micrometer:
+  - type: StandardBindersHook
+    config:
+      binderNames:
+        - JvmGcMetrics
+        - JvmMemoryMetrics
+        - JvmThreadMetrics
+        - ProcessorMetrics
+        - UptimeMetrics

@@ -1,0 +1,45 @@
+name: Terraform
+
+on:
+  pull_request:
+    paths:
+      - "terraform/**"
+      - "examples/complete/**"
+      - ".github/workflows/terraform.yml"
+  push:
+    paths:
+      - "terraform/**"
+      - "examples/complete/**"
+      - ".github/workflows/terraform.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Format, validate, and lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - uses: actions/checkout@v6
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_wrapper: false
+      - uses: terraform-linters/setup-tflint@v6
+      - name: Check formatting
+        run: terraform fmt -check -recursive
+      - name: Initialize without a backend
+        run: terraform init -backend=false -input=false
+      - name: Validate configuration
+        run: terraform validate -no-color
+      - name: Initialize TFLint plugins
+        run: tflint --init
+      - name: Lint configuration
+        run: tflint --recursive --format compact
+      - name: Validate complete example
+        working-directory: examples/complete
+        run: |
+          terraform init -backend=false -input=false
+          terraform validate -no-color

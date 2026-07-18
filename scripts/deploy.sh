@@ -5,7 +5,8 @@ project_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$project_root"
 
 ./scripts/validate.sh
-terraform -chdir=terraform init
-terraform -chdir=terraform plan -out=tfplan
+example_dir=examples/complete
+terraform -chdir="$example_dir" init
+terraform -chdir="$example_dir" plan -out=tfplan
 
-echo "Review terraform/tfplan, then run: terraform -chdir=terraform apply tfplan"
+echo "Review $example_dir/tfplan, then run: terraform -chdir=$example_dir apply tfplan"

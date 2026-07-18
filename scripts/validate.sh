@@ -17,6 +17,8 @@ if command -v terraform >/dev/null; then
   terraform -chdir=terraform fmt -check -recursive
   terraform -chdir=terraform init -backend=false >/dev/null
   terraform -chdir=terraform validate
+  terraform -chdir=examples/complete init -backend=false >/dev/null
+  terraform -chdir=examples/complete validate
 else
   echo "WARN: terraform is not installed; skipped Terraform fmt/validate" >&2
 fi

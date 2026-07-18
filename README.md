@@ -2,6 +2,8 @@
 
 This project exposes a **private Amazon MSK cluster** to external Kafka clients while ensuring every client-visible Kafka connection uses **TCP 443**.
 
+> **Status: Experimental / pre-1.0.** Validate with a non-production MSK cluster before production use.
+
 The selected design is:
 
 - An internet-facing AWS Network Load Balancer (NLB) accepts raw TCP/TLS on `443`.
@@ -24,6 +26,37 @@ The native MSK broker hostnames and ports never need to be reachable by external
 - Metadata, port-use, produce/consume, admin, consumer-group, transaction, and failover tests.
 - Architecture, feasibility, security, ADR, test-plan, and cost/operations documents.
 - A validation report separating completed local checks from AWS-dependent acceptance tests.
+
+## Use as a Terraform module
+
+The reusable module is in [`terraform/`](terraform). The
+[`examples/complete`](examples/complete) configuration is the deployable local
+reference. The caller owns AWS provider configuration, credentials, backends,
+and provider-level tags.
+
+Until a tagged Terraform Registry release exists, consume a reviewed Git tag or
+commit explicitly:
+
+```hcl
+module "msk_proxy_443" {
+  source = "git::https://github.com/sahilmathur254/aws-msk-kafka-proxy-443.git//terraform?ref=<reviewed-tag-or-commit>"
+
+  name                             = "production-msk-proxy"
+  vpc_id                           = module.vpc.vpc_id
+  public_subnet_ids                = module.vpc.public_subnets
+  private_subnet_ids               = module.vpc.private_subnets
+  msk_security_group_id            = aws_security_group.msk.id
+  msk_bootstrap_brokers_sasl_scram = aws_msk_cluster.main.bootstrap_brokers_sasl_scram
+  route53_zone_id                  = data.aws_route53_zone.main.zone_id
+  kafka_domain                     = "kafka.example.com"
+  tls_secret_arn                   = aws_secretsmanager_secret.kafka_tls.arn
+  client_cidrs                     = ["203.0.113.10/32"]
+}
+```
+
+The module is self-contained: its Kroxylicious configuration and startup script
+are packaged under `terraform/templates/`, not loaded from paths outside the
+module.
 
 ## Important feasibility result
 
@@ -78,7 +111,7 @@ The script prints the secret ARN. It does not copy the certificate into this rep
 ## 2. Configure Terraform
 
 ```bash
-cp terraform/terraform.tfvars.example terraform/terraform.tfvars
+cp examples/complete/terraform.tfvars.example examples/complete/terraform.tfvars
 ```
 
 Edit all placeholder values. The most important variables are:
@@ -97,9 +130,9 @@ Edit all placeholder values. The most important variables are:
 
 ```bash
 ./scripts/validate.sh
-terraform -chdir=terraform init
-terraform -chdir=terraform plan -out=tfplan
-terraform -chdir=terraform apply tfplan
+terraform -chdir=examples/complete init
+terraform -chdir=examples/complete plan -out=tfplan
+terraform -chdir=examples/complete apply tfplan
 ```
 
 The output `bootstrap_server` is the only bootstrap address external clients need.
@@ -186,7 +219,7 @@ To roll back an application version, set `kroxylicious_image` to the previous pi
 To remove the proof of concept:
 
 ```bash
-terraform -chdir=terraform destroy
+terraform -chdir=examples/complete destroy
 ```
 
 The externally managed TLS secret, MSK cluster, hosted zone, and client credentials are not destroyed. Terraform removes only the ingress rule it created on the existing MSK security group.

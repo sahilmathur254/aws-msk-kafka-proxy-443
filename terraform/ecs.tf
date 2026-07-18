@@ -90,7 +90,7 @@ resource "aws_ecs_task_definition" "proxy" {
         logDriver = "awslogs"
         options = {
           awslogs-group         = aws_cloudwatch_log_group.proxy.name
-          awslogs-region        = var.aws_region
+          awslogs-region        = local.aws_region
           awslogs-stream-prefix = "proxy"
         }
       }

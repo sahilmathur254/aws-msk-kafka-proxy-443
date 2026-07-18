@@ -1,5 +1,6 @@
 .terraform/
 terraform/terraform.tfvars
+examples/**/terraform.tfvars
 *.tfstate
 *.tfstate.*
 *.tfplan

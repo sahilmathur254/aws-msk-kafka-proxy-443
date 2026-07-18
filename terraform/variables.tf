@@ -1,8 +1,3 @@
-variable "aws_region" {
-  description = "AWS Region containing the VPC, ECS service, and MSK cluster."
-  type        = string
-}
-
 variable "name" {
   description = "Short resource-name prefix."
   type        = string

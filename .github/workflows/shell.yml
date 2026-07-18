@@ -1,0 +1,34 @@
+name: Shell and Python
+
+on:
+  pull_request:
+    paths:
+      - "clients/**"
+      - "proxy/scripts/**"
+      - "scripts/**"
+      - "tests/**"
+      - ".github/workflows/shell.yml"
+  push:
+    paths:
+      - "clients/**"
+      - "proxy/scripts/**"
+      - "scripts/**"
+      - "tests/**"
+      - ".github/workflows/shell.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check Bash syntax
+        run: find scripts tests proxy/scripts -type f -name '*.sh' -print0 | xargs -0 -r -n1 bash -n
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          scandir: scripts tests proxy/scripts
+      - name: Compile Python client code
+        run: python3 -m py_compile clients/transactions.py

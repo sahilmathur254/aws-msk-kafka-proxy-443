@@ -70,6 +70,10 @@ resource "aws_vpc_security_group_egress_rule" "proxy_to_msk" {
   referenced_security_group_id = var.msk_security_group_id
 }
 
+# HTTPS egress is required for the default Quay image path and AWS APIs when
+# private subnets use NAT. Production deployments should replace it with VPC
+# endpoint-specific rules or a private ECR mirror as documented.
+#trivy:ignore:AVD-AWS-0104
 resource "aws_vpc_security_group_egress_rule" "proxy_https" {
   security_group_id = aws_security_group.proxy.id
   description       = "HTTPS for image retrieval and AWS service APIs through NAT or endpoints"

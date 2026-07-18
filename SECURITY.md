@@ -5,7 +5,7 @@
 Do not report security vulnerabilities through public GitHub issues,
 discussions, pull requests, or commits.
 
-Use [GitHub's private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/working-with-repository-security-advisories/configuring-private-vulnerability-reporting-for-your-repository)
+Use [GitHub's private vulnerability reporting](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/report-privately)
 when it is enabled for this repository. Include a clear description,
 reproduction steps, affected versions or files, impact, and any suggested
 mitigation. Do not include live credentials, TLS private keys, or customer data.

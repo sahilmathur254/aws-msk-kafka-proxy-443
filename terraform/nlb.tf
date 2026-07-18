@@ -1,3 +1,6 @@
+# The NLB is intentionally public: this module exists to provide the restricted
+# external Kafka endpoint. Ingress remains limited by client_cidrs.
+#trivy:ignore:AVD-AWS-0053
 resource "aws_lb" "kafka" {
   name                             = var.name
   internal                         = false

@@ -1,0 +1,39 @@
+name: Bug report
+description: Report a reproducible problem with this project.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include credentials, TLS private keys, Terraform state, internal
+        broker hostnames, or other sensitive deployment data. For security
+        vulnerabilities, follow SECURITY.md instead.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the observed and expected behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Provide redacted steps and configuration needed to reproduce.
+    validations:
+      required: true
+  - type: textarea
+    id: versions
+    attributes:
+      label: Versions
+      description: Include Terraform, AWS provider, and Kroxylicious versions or image digest.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed secrets and sensitive infrastructure details.
+          required: true

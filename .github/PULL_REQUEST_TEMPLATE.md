@@ -1,6 +1,16 @@
+Fixes #<!-- issue number -->
+
 ## Summary
 
 Describe the change and why it is needed.
+
+## Type of change
+
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Documentation
+- [ ] CI / infrastructure
+- [ ] Refactor (no functional change)
 
 ## Validation
 

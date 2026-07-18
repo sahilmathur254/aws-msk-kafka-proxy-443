@@ -18,7 +18,7 @@ jobs:
     name: Check Markdown links
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Check links
         uses: lycheeverse/lychee-action@v2
         with:
@@ -28,7 +28,7 @@ jobs:
     name: Check Terraform documentation drift
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: terraform-docs/gh-actions@v1.4.1
         if: ${{ hashFiles('terraform/README.md') != '' }}
         with:

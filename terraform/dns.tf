@@ -1,4 +1,6 @@
 resource "aws_route53_record" "bootstrap" {
+  count = var.create_dns_records ? 1 : 0
+
   zone_id = var.route53_zone_id
   name    = local.bootstrap_hostname
   type    = "A"
@@ -11,6 +13,8 @@ resource "aws_route53_record" "bootstrap" {
 }
 
 resource "aws_route53_record" "brokers" {
+  count = var.create_dns_records ? 1 : 0
+
   zone_id = var.route53_zone_id
   name    = "*.${var.kafka_domain}"
   type    = "A"

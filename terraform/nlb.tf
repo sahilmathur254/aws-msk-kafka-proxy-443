@@ -28,6 +28,11 @@ resource "aws_lb" "kafka" {
       condition     = var.autoscaling_min_capacity <= var.autoscaling_max_capacity && var.desired_count >= var.autoscaling_min_capacity && var.desired_count <= var.autoscaling_max_capacity
       error_message = "desired_count must be within autoscaling capacity bounds, and the minimum must not exceed the maximum."
     }
+
+    precondition {
+      condition     = !var.create_dns_records || var.route53_zone_id != null
+      error_message = "route53_zone_id must be provided when create_dns_records is true."
+    }
   }
 
   tags = local.common_tags

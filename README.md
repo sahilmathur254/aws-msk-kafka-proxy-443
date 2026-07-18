@@ -131,6 +131,18 @@ by default. The `allow_unrestricted_client_cidrs` and
 `allow_mutable_image_tag` escape hatches require an explicit configuration
 change and should be used only after a documented risk decision.
 
+### External DNS and optional monitoring
+
+Set `create_dns_records = false` when another DNS provider manages the Kafka
+hostnames. Create alias or CNAME-equivalent records for the `bootstrap_hostname`
+and `broker_wildcard_hostname` outputs, both targeting `nlb_dns_name`; use
+`nlb_zone_id` where the DNS provider requires the NLB's canonical hosted-zone
+ID. `route53_zone_id` is then not required.
+
+`create_alarms`, `create_cloudwatch_dashboard`, `enable_container_insights`,
+and `enable_execute_command` all default to safe operational settings and can
+be configured independently.
+
 ## 3. Validate and deploy
 
 ```bash

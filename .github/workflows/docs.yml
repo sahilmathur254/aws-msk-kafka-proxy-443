@@ -22,7 +22,7 @@ jobs:
       - name: Check links
         uses: lycheeverse/lychee-action@v2
         with:
-          args: --no-progress --exclude-mail './**/*.md'
+          args: --no-progress './**/*.md'
           fail: true
   terraform-docs-drift:
     name: Check Terraform documentation drift

@@ -9,7 +9,7 @@ resource "aws_ecs_cluster" "proxy" {
 
   setting {
     name  = "containerInsights"
-    value = "enabled"
+    value = var.enable_container_insights ? "enabled" : "disabled"
   }
 
   tags = local.common_tags
@@ -111,7 +111,7 @@ resource "aws_ecs_service" "proxy" {
   deployment_minimum_healthy_percent = 100
   deployment_maximum_percent         = 200
   health_check_grace_period_seconds  = 60
-  enable_execute_command             = false
+  enable_execute_command             = var.enable_execute_command
   propagate_tags                     = "SERVICE"
 
   deployment_circuit_breaker {

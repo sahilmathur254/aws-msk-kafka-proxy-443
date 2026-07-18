@@ -68,8 +68,15 @@ variable "msk_broker_port" {
 }
 
 variable "route53_zone_id" {
-  description = "Existing public Route 53 hosted-zone ID containing kafka_domain."
+  description = "Existing public Route 53 hosted-zone ID containing kafka_domain. Required only when create_dns_records is true."
   type        = string
+  default     = null
+}
+
+variable "create_dns_records" {
+  description = "Whether to create Route 53 bootstrap and wildcard records. Set false when DNS is managed externally."
+  type        = bool
+  default     = true
 }
 
 variable "kafka_domain" {
@@ -242,6 +249,30 @@ variable "nlb_deletion_protection" {
   description = "Enable NLB deletion protection. Set true for production after initial validation."
   type        = bool
   default     = false
+}
+
+variable "enable_container_insights" {
+  description = "Enable CloudWatch Container Insights on the ECS cluster."
+  type        = bool
+  default     = true
+}
+
+variable "enable_execute_command" {
+  description = "Enable ECS Exec for proxy tasks. Keep disabled unless interactive task access is explicitly required."
+  type        = bool
+  default     = false
+}
+
+variable "create_alarms" {
+  description = "Whether to create CloudWatch alarms and the supporting proxy error metric filter."
+  type        = bool
+  default     = true
+}
+
+variable "create_cloudwatch_dashboard" {
+  description = "Whether to create the CloudWatch dashboard."
+  type        = bool
+  default     = true
 }
 
 variable "alarm_action_arns" {

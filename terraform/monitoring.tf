@@ -1,4 +1,6 @@
 resource "aws_cloudwatch_log_metric_filter" "proxy_errors" {
+  count = var.create_alarms ? 1 : 0
+
   name           = "${var.name}-errors"
   log_group_name = aws_cloudwatch_log_group.proxy.name
   pattern        = "ERROR"
@@ -12,6 +14,8 @@ resource "aws_cloudwatch_log_metric_filter" "proxy_errors" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "proxy_log_errors" {
+  count = var.create_alarms ? 1 : 0
+
   alarm_name          = "${var.name}-proxy-log-errors"
   alarm_description   = "Kroxylicious emitted ERROR-level log events."
   namespace           = "KafkaProxy/${var.name}"
@@ -27,6 +31,8 @@ resource "aws_cloudwatch_metric_alarm" "proxy_log_errors" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "unhealthy_targets" {
+  count = var.create_alarms ? 1 : 0
+
   alarm_name          = "${var.name}-unhealthy-targets"
   alarm_description   = "One or more Kroxylicious NLB targets are unhealthy."
   namespace           = "AWS/NetworkELB"
@@ -47,6 +53,8 @@ resource "aws_cloudwatch_metric_alarm" "unhealthy_targets" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "low_healthy_targets" {
+  count = var.create_alarms ? 1 : 0
+
   alarm_name          = "${var.name}-healthy-targets-below-two"
   alarm_description   = "Fewer than two healthy proxy targets removes task-level redundancy."
   namespace           = "AWS/NetworkELB"
@@ -67,6 +75,8 @@ resource "aws_cloudwatch_metric_alarm" "low_healthy_targets" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "high_cpu" {
+  count = var.create_alarms ? 1 : 0
+
   alarm_name          = "${var.name}-high-cpu"
   alarm_description   = "Proxy service CPU remained high after autoscaling response window."
   namespace           = "AWS/ECS"
@@ -87,6 +97,8 @@ resource "aws_cloudwatch_metric_alarm" "high_cpu" {
 }
 
 resource "aws_cloudwatch_dashboard" "proxy" {
+  count = var.create_cloudwatch_dashboard ? 1 : 0
+
   dashboard_name = var.name
 
   dashboard_body = jsonencode({

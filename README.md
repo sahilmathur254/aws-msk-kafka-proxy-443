@@ -126,6 +126,11 @@ Edit all placeholder values. The most important variables are:
 - `tls_secret_arn`
 - `client_cidrs`
 
+The module rejects `0.0.0.0/0` client access and mutable container image tags
+by default. The `allow_unrestricted_client_cidrs` and
+`allow_mutable_image_tag` escape hatches require an explicit configuration
+change and should be used only after a documented risk decision.
+
 ## 3. Validate and deploy
 
 ```bash

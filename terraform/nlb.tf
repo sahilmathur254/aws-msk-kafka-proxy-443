@@ -8,6 +8,28 @@ resource "aws_lb" "kafka" {
   enable_cross_zone_load_balancing = true
   enable_deletion_protection       = var.nlb_deletion_protection
 
+  lifecycle {
+    precondition {
+      condition     = var.allow_unrestricted_client_cidrs || !contains(var.client_cidrs, "0.0.0.0/0")
+      error_message = "client_cidrs must not include 0.0.0.0/0 unless allow_unrestricted_client_cidrs is true."
+    }
+
+    precondition {
+      condition     = var.allow_mutable_image_tag || can(regex("@sha256:[a-f0-9]{64}$", var.kroxylicious_image))
+      error_message = "kroxylicious_image must be pinned by sha256 digest unless allow_mutable_image_tag is true."
+    }
+
+    precondition {
+      condition     = contains(keys(local.fargate_memory_by_cpu), tostring(var.proxy_cpu)) && contains(lookup(local.fargate_memory_by_cpu, tostring(var.proxy_cpu), []), var.proxy_memory)
+      error_message = "proxy_cpu and proxy_memory must be a supported AWS Fargate CPU and memory combination."
+    }
+
+    precondition {
+      condition     = var.autoscaling_min_capacity <= var.autoscaling_max_capacity && var.desired_count >= var.autoscaling_min_capacity && var.desired_count <= var.autoscaling_max_capacity
+      error_message = "desired_count must be within autoscaling capacity bounds, and the minimum must not exceed the maximum."
+    }
+  }
+
   tags = local.common_tags
 }
 

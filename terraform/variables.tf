@@ -51,8 +51,8 @@ variable "msk_bootstrap_brokers_sasl_scram" {
   sensitive   = true
 
   validation {
-    condition     = length(trimspace(var.msk_bootstrap_brokers_sasl_scram)) > 0 && !can(regex("[[:space:]]", var.msk_bootstrap_brokers_sasl_scram))
-    error_message = "Provide a non-empty comma-separated MSK SASL/SCRAM bootstrap string without whitespace."
+    condition     = can(regex("^[^,:[:space:]]+:[1-9][0-9]{0,4}(,[^,:[:space:]]+:[1-9][0-9]{0,4})*$", var.msk_bootstrap_brokers_sasl_scram))
+    error_message = "Provide a comma-separated MSK bootstrap string containing host:port entries without whitespace."
   }
 }
 
@@ -86,12 +86,22 @@ variable "bootstrap_label" {
   description = "Left-most DNS label for the bootstrap endpoint."
   type        = string
   default     = "bootstrap"
+
+  validation {
+    condition     = can(regex("^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", var.bootstrap_label))
+    error_message = "bootstrap_label must be a lowercase DNS label."
+  }
 }
 
 variable "broker_label_prefix" {
   description = "Prefix used to generate broker-<node-id> hostnames."
   type        = string
   default     = "broker"
+
+  validation {
+    condition     = can(regex("^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", var.broker_label_prefix))
+    error_message = "broker_label_prefix must be a lowercase DNS label."
+  }
 }
 
 variable "tls_secret_arn" {
@@ -111,15 +121,32 @@ variable "client_cidrs" {
   type        = set(string)
 
   validation {
-    condition     = length(var.client_cidrs) > 0 && alltrue([for cidr in var.client_cidrs : can(cidrhost(cidr, 0))])
+    condition     = length(var.client_cidrs) > 0 && alltrue([for cidr in var.client_cidrs : !strcontains(cidr, ":") && can(cidrhost(cidr, 0))])
     error_message = "Provide at least one valid IPv4 client CIDR."
   }
+}
+
+variable "allow_unrestricted_client_cidrs" {
+  description = "Allow 0.0.0.0/0 in client_cidrs. Keep false unless an explicit risk decision permits unrestricted public ingress."
+  type        = bool
+  default     = false
 }
 
 variable "kroxylicious_image" {
   description = "Immutable Kroxylicious image reference."
   type        = string
   default     = "quay.io/kroxylicious/proxy@sha256:52cd6fb28212c4310bd06b8af6de766f7e3a7f19fd27b0249f48a0413c4e5358"
+
+  validation {
+    condition     = length(trimspace(var.kroxylicious_image)) > 0
+    error_message = "kroxylicious_image must not be empty."
+  }
+}
+
+variable "allow_mutable_image_tag" {
+  description = "Allow a container image reference without an immutable sha256 digest. Keep false for controlled deployments."
+  type        = bool
+  default     = false
 }
 
 variable "proxy_cpu" {
@@ -138,6 +165,11 @@ variable "proxy_worker_threads" {
   description = "Kroxylicious Netty worker thread count."
   type        = number
   default     = 8
+
+  validation {
+    condition     = var.proxy_worker_threads >= 1 && var.proxy_worker_threads <= 128
+    error_message = "proxy_worker_threads must be between 1 and 128."
+  }
 }
 
 variable "desired_count" {
@@ -155,30 +187,55 @@ variable "autoscaling_min_capacity" {
   description = "Minimum ECS task count."
   type        = number
   default     = 2
+
+  validation {
+    condition     = var.autoscaling_min_capacity >= 2
+    error_message = "autoscaling_min_capacity must be at least 2 for high availability."
+  }
 }
 
 variable "autoscaling_max_capacity" {
   description = "Maximum ECS task count."
   type        = number
   default     = 10
+
+  validation {
+    condition     = var.autoscaling_max_capacity >= 2
+    error_message = "autoscaling_max_capacity must be at least 2."
+  }
 }
 
 variable "cpu_target_percent" {
   description = "Target ECS average CPU utilisation."
   type        = number
   default     = 60
+
+  validation {
+    condition     = var.cpu_target_percent > 0 && var.cpu_target_percent <= 100
+    error_message = "cpu_target_percent must be greater than 0 and no more than 100."
+  }
 }
 
 variable "memory_target_percent" {
   description = "Target ECS average memory utilisation."
   type        = number
   default     = 70
+
+  validation {
+    condition     = var.memory_target_percent > 0 && var.memory_target_percent <= 100
+    error_message = "memory_target_percent must be greater than 0 and no more than 100."
+  }
 }
 
 variable "log_retention_days" {
   description = "CloudWatch log retention."
   type        = number
   default     = 30
+
+  validation {
+    condition     = contains([1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653], var.log_retention_days)
+    error_message = "log_retention_days must be an AWS-supported CloudWatch Logs retention value."
+  }
 }
 
 variable "nlb_deletion_protection" {

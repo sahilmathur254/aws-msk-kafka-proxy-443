@@ -1,0 +1,6 @@
+AWS MSK Kafka Proxy on Port 443
+Copyright 2026 Sahil Mathur
+
+This product includes configuration for Kroxylicious. Kroxylicious is a
+separate project and is not distributed as part of this repository; users
+must comply with its applicable licence when obtaining and using its image.

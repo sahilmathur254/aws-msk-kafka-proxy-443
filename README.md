@@ -2,7 +2,7 @@
 
 This project exposes a **private Amazon MSK cluster** to external Kafka clients while ensuring every client-visible Kafka connection uses **TCP 443**.
 
-> **Status: Experimental / pre-1.0.** Validate with a non-production MSK cluster before production use.
+> **Status:** See the [latest release](https://github.com/sahilmathur254/aws-msk-kafka-proxy-443/releases) for the current version. Validate with a non-production MSK cluster before production use.
 
 The selected design is:
 
@@ -34,12 +34,11 @@ The reusable module is in [`terraform/`](terraform). The
 reference. The caller owns AWS provider configuration, credentials, backends,
 and provider-level tags.
 
-Until a tagged Terraform Registry release exists, consume a reviewed Git tag or
-commit explicitly:
+Consume a reviewed Git tag:
 
 ```hcl
 module "msk_proxy_443" {
-  source = "git::https://github.com/sahilmathur254/aws-msk-kafka-proxy-443.git//terraform?ref=<reviewed-tag-or-commit>"
+  source = "git::https://github.com/sahilmathur254/aws-msk-kafka-proxy-443.git//terraform?ref=v0.1.0"
 
   name                             = "production-msk-proxy"
   vpc_id                           = module.vpc.vpc_id

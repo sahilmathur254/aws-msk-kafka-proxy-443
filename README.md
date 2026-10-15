@@ -249,6 +249,39 @@ The externally managed TLS secret, MSK cluster, hosted zone, and client credenti
 - Long-lived Kafka connections do not redistribute immediately when new proxy tasks are added. Client reconnects and connection lifecycle determine rebalancing.
 - Run performance, soak, upgrade, certificate-rotation, and disaster-recovery tests before production use.
 
+## Testing
+
+This module includes a test suite implemented with the native [Terraform Test Framework](https://developer.hashicorp.com/terraform/language/tests) (Terraform 1.6+).
+
+### Prerequisites
+- **Terraform CLI**: `v1.6.0` or higher.
+- **AWS Credentials**: Not required. Tests use `command = plan` and run entirely in-memory using mock values.
+
+### Running Tests Locally
+
+1. Initialize the module and download test providers:
+```bash
+   terraform init
+```
+2. Run the complete test suite:
+```bash
+   terraform test
+```
+3. Run targeted test files individually:
+
+  - Run boundary & variable validation tests only
+```bash
+   terraform test -filter=tests/guardrails.tftest.hcl
+```
+     
+  - Run feature flag & autoscaling verification tests only
+```bash
+     terraform test -filter=tests/features.tftest.hcl
+```
+### Test Suite Organization
+- `tests/guardrails.tftest.hcl`: Verifies variable `validation` blocks and input sanitization rules using negative assertions (`expect_failures`).
+- `tests/features.tftest.hcl`: Verifies resource creation logic, optional feature flag toggles, autoscaling policy thresholds, and output generation contracts.
+
 ## References
 
 - [Kroxylicious Proxy Guide](https://kroxylicious.io/documentation/0.23.0/html/kroxylicious-proxy/)

@@ -28,7 +28,7 @@ variables {
   route53_zone_id                  = "Z1234567890MOCK"
 }
 
-# Requirement 5: Verify create_dns_records = false does not require Route 53 zone ID
+# Verify create_dns_records = false does not require Route 53 zone ID
 run "create_dns_records_disabled_without_zone_id" {
   command = plan
 
@@ -53,29 +53,7 @@ run "create_dns_records_enabled_with_null_zone_id" {
 
 
 
-# Requirement 6: Test optional alarms, dashboards, Container Insights, and ECS Exec
-# run "verify_optional_feature_flags" {
-#   command = plan
-
-#   variables {
-#     enable_container_insights   = true
-#     enable_execute_command      = true
-#     create_alarms               = true
-#     create_cloudwatch_dashboard = true
-#   }
-
-#   assert {
-#     condition     = var.enable_container_insights == true
-#     error_message = "Container Insights should be enabled."
-#   }
-
-#   assert {
-#     condition     = var.create_cloudwatch_dashboard == true
-#     error_message = "CloudWatch dashboard should be enabled."
-#   }
-
-# }
-
+# Test optional alarms, dashboards, Container Insights, and ECS Exec
 run "verify_optional_feature_flags" {
   command = plan
 
@@ -124,17 +102,12 @@ run "verify_optional_feature_flags_disabled" {
     create_cloudwatch_dashboard = false
   }
 
-  # assert {
-  #   condition     = aws_ecs_cluster.proxy.setting[0].value == "enabled"
-  #   error_message = "Container Insights should be enabled."
-  # }
-
   assert {
     condition = length([
       for s in aws_ecs_cluster.proxy.setting : s
-      if s.name == "containerInsights" && s.value == "enabled"
-    ]) == 0
-    error_message = "Container Insights should be disabled."
+      if s.name == "containerInsights" && s.value == "disabled"
+    ]) > 0
+    error_message = "No Container Insights should be enabled."
   }
   assert {
     condition     = length(aws_cloudwatch_dashboard.proxy) == 0
@@ -166,7 +139,7 @@ run "verify_optional_feature_flags_disabled" {
 
 
 }
-# Requirement 7: Verify Autoscaling configuration attributes
+# Verify Autoscaling configuration attributes
 run "verify_autoscaling_configurations" {
   command = plan
 
@@ -189,14 +162,7 @@ run "verify_autoscaling_configurations" {
     condition     = aws_appautoscaling_target.proxy.max_capacity == 10
     error_message = "Autoscaling max_capacity should match variable input."
   }
-  # assert {
-  #   condition     = aws_cpu_target_percentage == 75.0
-  #   error_message = "Autoscaling cpu_target_percent should match variable input."
-  # }
-  # assert {
-  #   condition     = aws_memory_target_percentage  == 80.0
-  #   error_message = "Autoscaling memory_target_percentshould match variable input."
-  # }
+
   assert {
     condition     = aws_appautoscaling_policy.cpu.target_tracking_scaling_policy_configuration[0].target_value == 75.0
     error_message = "Autoscaling CPU target_value should match variable input."
@@ -206,16 +172,16 @@ run "verify_autoscaling_configurations" {
     condition     = aws_appautoscaling_policy.memory.target_tracking_scaling_policy_configuration[0].target_value == 80.0
     error_message = "Autoscaling memory target_value should match variable input."
   }
+
   assert {
-    condition     = output.bootstrap_hostname != null
-    error_message = "Bootstrap hostname output should not be null."
+    condition     = output.bootstrap_hostname == "${var.bootstrap_label}.${var.kafka_domain}"
+    error_message = "Bootstrap hostname output should be correct as per the domain."
   }
 
   assert {
-    condition     = endswith(output.bootstrap_server, ":443")
-    error_message = "Bootstrap server output should end with port 443."
+    condition     = output.bootstrap_server == "${local.bootstrap_hostname}:443"
+    error_message = "Bootstrap server output should be in accordance to bootstrap hostname."
   }
-
   assert {
     condition     = output.broker_wildcard_hostname == "*.${var.kafka_domain}"
     error_message = "Broker wildcard hostname should correctly format the domain."

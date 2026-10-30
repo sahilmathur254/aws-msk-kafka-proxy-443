@@ -69,7 +69,7 @@ See [docs/feasibility-analysis.md](docs/feasibility-analysis.md) for the detaile
 
 You need:
 
-1. Terraform `>= 1.6`.
+1. Terraform `>= 1.6`. (The module itself is compatible with Terraform `>= 1.6`, but running the bundled test suite requires `>= 1.7` — see [Testing](#testing).)
 2. AWS CLI v2 authenticated to the target account.
 3. An existing Amazon MSK provisioned cluster with:
    - SASL/SCRAM enabled.
@@ -251,36 +251,50 @@ The externally managed TLS secret, MSK cluster, hosted zone, and client credenti
 
 ## Testing
 
-This module includes a test suite implemented with the native [Terraform Test Framework](https://developer.hashicorp.com/terraform/language/tests) (Terraform 1.6+).
+This module includes a test suite implemented with the native [Terraform Test Framework](https://developer.hashicorp.com/terraform/language/tests).
 
 ### Prerequisites
-- **Terraform CLI**: `v1.6.0` or higher.
-- **AWS Credentials**: Not required. Tests use `command = plan` and run entirely in-memory using mock values.
+
+- **Module compatibility**: Terraform `v1.6.0` or higher, for the module code itself.
+- **Running the tests**: **Terraform `v1.7.0` or higher** is required. The test suite uses `mock_provider` blocks, and mock providers were introduced in Terraform `1.7`. Running these tests on `1.6` will fail.
+- **AWS Credentials**: Not required. Tests use `command = plan` with mock providers and run entirely in-memory; they do not call AWS APIs.
 
 ### Running Tests Locally
 
-1. Initialize the module and download test providers:
-```bash
-   terraform init
-```
-2. Run the complete test suite:
-```bash
-   terraform test
-```
-3. Run targeted test files individually:
+Run these commands from the **repository root**. The tests live under
+`terraform/tests/`, and the module is rooted at `terraform/`, so use
+`-chdir=terraform` to target the module directory.
 
-  - Run boundary & variable validation tests only
+1. Initialize the module without a remote backend and download the test providers:
+
 ```bash
-   terraform test -filter=tests/guardrails.tftest.hcl
+terraform -chdir=terraform init -backend=false
 ```
-     
-  - Run feature flag & autoscaling verification tests only
+
+2. Run the complete test suite:
+
 ```bash
-     terraform test -filter=tests/features.tftest.hcl
+terraform -chdir=terraform test
 ```
+
+3. Run targeted test files individually (still `-chdir=terraform`, with the filter path relative to `terraform/`):
+
+   - Run boundary and variable validation tests only:
+
+```bash
+terraform -chdir=terraform test -filter=tests/guardrails.tftest.hcl
+```
+
+   - Run feature flag and autoscaling verification tests only:
+
+```bash
+terraform -chdir=terraform test -filter=tests/features.tftest.hcl
+```
+
 ### Test Suite Organization
-- `tests/guardrails.tftest.hcl`: Verifies variable `validation` blocks and input sanitization rules using negative assertions (`expect_failures`).
-- `tests/features.tftest.hcl`: Verifies resource creation logic, optional feature flag toggles, autoscaling policy thresholds, and output generation contracts.
+
+- `terraform/tests/guardrails.tftest.hcl`: Verifies variable `validation` blocks and input sanitization rules using negative assertions (`expect_failures`).
+- `terraform/tests/features.tftest.hcl`: Verifies resource creation logic, optional feature flag toggles, autoscaling policy thresholds, and output generation contracts.
 
 ## References
 

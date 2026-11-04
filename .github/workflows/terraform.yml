@@ -11,10 +11,8 @@ on:
       - "terraform/**"
       - "examples/complete/**"
       - ".github/workflows/terraform.yml"
-
 permissions:
   contents: read
-
 jobs:
   validate:
     name: Format, validate, and lint
@@ -43,3 +41,6 @@ jobs:
         run: |
           terraform init -backend=false -input=false
           terraform validate -no-color
+      - name: Run Terraform Tests
+        run: terraform test
+        working-directory: ./terraform

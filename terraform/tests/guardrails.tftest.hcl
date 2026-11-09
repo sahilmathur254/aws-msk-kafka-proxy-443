@@ -13,25 +13,7 @@ mock_provider "aws" {
       })
     }
   }
-  # Provide valid mock ARNs for the resources so AWS provider validation passes
-  mock_resource "aws_iam_role" {
-    defaults = {
-      arn = "arn:aws:iam::123456789012:role/mock-role"
-    }
-  }
 
-  mock_resource "aws_lb" {
-    defaults = {
-      arn    = "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/mock-lb/1234567890abcdef"
-      vpc_id = "vpc-1234567890" # This forces the mock resource to return your expected VPC ID
-    }
-  }
-
-  mock_resource "aws_lb_target_group" {
-    defaults = {
-      arn = "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/mock-tg/1234567890abcdef"
-    }
-  }
 }
 # Global dummy values to satisfy required module inputs across all guardrail tests
 variables {
@@ -65,15 +47,43 @@ run "reject_unrestricted_client_cidrs_by_default" {
   command = plan
 
   variables {
-    client_cidrs                    = ["0.0.0.0/0"]
-    allow_unrestricted_client_cidrs = false
+    client_cidrs = ["0.0.0.0/0"]
+
   }
 
   expect_failures = [
     aws_lb.kafka,
   ]
 }
+run "client_cidrs_empty_fails" {
+  command = plan
 
+  variables {
+    client_cidrs = []
+  }
+
+  expect_failures = [var.client_cidrs]
+}
+
+run "client_cidrs_malformed_ipv4_cidr_fails" {
+  command = plan
+
+  variables {
+    client_cidrs = ["10.0.0.0/33"]
+  }
+
+  expect_failures = [var.client_cidrs]
+}
+
+run "client_cidrs_ipv6_cidr_fails" {
+  command = plan
+
+  variables {
+    client_cidrs = ["2001:db8::/32"]
+  }
+
+  expect_failures = [var.client_cidrs]
+}
 
 # Requirement 2: Verify explicit mutable-tag escape hatch
 run "allow_mutable_image_tag_escape_hatch" {
@@ -93,8 +103,8 @@ run "reject_mutable_image_tag_by_default" {
   command = plan
 
   variables {
-    kroxylicious_image      = "kroxylicious/proxy:latest"
-    allow_mutable_image_tag = false
+    kroxylicious_image = "kroxylicious/proxy:latest"
+
   }
 
   expect_failures = [
@@ -240,13 +250,33 @@ run "empty_name" {
   ]
 
 }
-run "verify_vpc_id_is_wired_to_nlb" {
-  command = apply
-  # No variables block needed — inherits from global
 
+
+run "verify_vpc_id_is_wired_to_nlb" {
+  command = plan
+
+  # Target group VPC comes directly from var.vpc_id (an argument, known at plan time)
   assert {
-    condition     = aws_lb.kafka.vpc_id == var.vpc_id
-    error_message = "NLB must be created in the provided VPC."
+    condition     = aws_lb_target_group.proxy.vpc_id == var.vpc_id
+    error_message = "Target group must be created in the provided VPC."
+  }
+
+  # NLB security group VPC
+  assert {
+    condition     = aws_security_group.nlb.vpc_id == var.vpc_id
+    error_message = "NLB security group must be created in the provided VPC."
+  }
+
+  # Proxy security group VPC
+  assert {
+    condition     = aws_security_group.proxy.vpc_id == var.vpc_id
+    error_message = "Proxy security group must be created in the provided VPC."
+  }
+
+  # NLB has no vpc_id argument — its VPC is determined by its subnets
+  assert {
+    condition     = toset(aws_lb.kafka.subnets) == toset(var.public_subnet_ids)
+    error_message = "NLB must be attached to the provided public subnets."
   }
 }
 
@@ -285,7 +315,40 @@ run "reject_empty_public_subnets" {
   ]
 }
 
+run "reject_insufficient_private_subnets" {
+  command = plan
 
+  variables {
+    public_subnet_ids = ["subnet-priv1"] # Only 1 subnet provided
+  }
+
+  expect_failures = [
+    var.public_subnet_ids,
+  ]
+}
+
+run "reject_duplicate_private_subnets" {
+  command = plan
+
+  variables {
+    public_subnet_ids = ["subnet-priv1", "subnet-priv1"] # Not distinct
+  }
+
+  expect_failures = [
+    var.public_subnet_ids,
+  ]
+}
+run "reject_empty_private_subnets" {
+  command = plan
+
+  variables {
+    public_subnet_ids = []
+  }
+
+  expect_failures = [
+    var.public_subnet_ids,
+  ]
+}
 
 run "verify_msk_security_group_id_is_wired" {
   command = plan

@@ -1,16 +1,16 @@
 mock_provider "aws" {
   mock_data "aws_iam_policy_document" {
     defaults = {
-      json = jsonencode({
-        Version = "2012-10-17"
-        Statement = [{
-          Action = "sts:AssumeRole"
-          Effect = "Allow"
-          Principal = {
-            Service = "ecs-tasks.amazonaws.com"
-          }
-        }]
-      })
+      json = <<-JSON
+        {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Action": "sts:AssumeRole",
+            "Effect": "Allow",
+            "Principal": {"Service": "ecs-tasks.amazonaws.com"}
+          }]
+        }
+      JSON
     }
   }
 }

@@ -1,16 +1,16 @@
 mock_provider "aws" {
   mock_data "aws_iam_policy_document" {
     defaults = {
-      json = jsonencode({
-        Version = "2012-10-17"
-        Statement = [{
-          Action = "sts:AssumeRole"
-          Effect = "Allow"
-          Principal = {
-            Service = "ecs-tasks.amazonaws.com"
-          }
-        }]
-      })
+      json = <<-JSON
+        {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Action": "sts:AssumeRole",
+            "Effect": "Allow",
+            "Principal": {"Service": "ecs-tasks.amazonaws.com"}
+          }]
+        }
+      JSON
     }
   }
 
@@ -319,11 +319,11 @@ run "reject_insufficient_private_subnets" {
   command = plan
 
   variables {
-    public_subnet_ids = ["subnet-priv1"] # Only 1 subnet provided
+    private_subnet_ids = ["subnet-priv1"] # Only 1 subnet provided
   }
 
   expect_failures = [
-    var.public_subnet_ids,
+    var.private_subnet_ids,
   ]
 }
 
@@ -331,22 +331,22 @@ run "reject_duplicate_private_subnets" {
   command = plan
 
   variables {
-    public_subnet_ids = ["subnet-priv1", "subnet-priv1"] # Not distinct
+    private_subnet_ids = ["subnet-priv1", "subnet-priv1"] # Not distinct
   }
 
   expect_failures = [
-    var.public_subnet_ids,
+    var.private_subnet_ids,
   ]
 }
 run "reject_empty_private_subnets" {
   command = plan
 
   variables {
-    public_subnet_ids = []
+    private_subnet_ids = []
   }
 
   expect_failures = [
-    var.public_subnet_ids,
+    var.private_subnet_ids,
   ]
 }
 
